@@ -9,35 +9,66 @@ public class CatGame{
     int catPosition;
     int size;
     DijkstraUndirectedSP shortestPath;
+    final int FREEDOM;
 
     public CatGame(int n){
         size = n;
         board = new EdgeWeightedGraph(n*n + 1);
         marked = new boolean[n*n + 1];
         catPosition = index(n/2, n/2);
+        boolean[][] hasEdge = new boolean[n][n];
+        FREEDOM = n*n;
 
+        //inside vertices
         for(int row = 1; row < n-1; row++){
             for (int col = 1; col < n -1; col++){
                 int v = index(row, col);
-                board.addEdge(new CatEdge(v, v - 1));
-                board.addEdge(new CatEdge(v, v + 1));
-                board.addEdge(new CatEdge(v, v - n - 1));
-                board.addEdge(new CatEdge(v, v - n));
-                board.addEdge(new CatEdge(v, v + n));
-                board.addEdge(new CatEdge(v, v + n -1));
+                if(!hasEdge[v][v-1]){
+                    board.addEdge(new CatEdge(v, v - 1));
+                    hasEdge[v][v-1] = true;
+                }
+                if(!hasEdge[v][v+1]){
+                    board.addEdge(new CatEdge(v, v + 1));
+                    hasEdge[v][v+1] = true;
+                }
+                if(!hasEdge[v][v-n-1]){
+                    board.addEdge(new CatEdge(v, v - n - 1));
+                    hasEdge[v][v-n-1] = true;
+                }
+                if(!hasEdge[v][v-n]){
+                    board.addEdge(new CatEdge(v, v - n));
+                    hasEdge[v][v-n] = true;
+                }
+                if(!hasEdge[v][v+n]){
+                    board.addEdge(new CatEdge(v, v + n));
+                    hasEdge[v][v+n] = true;
+                }
+                if(!hasEdge[v][v+n-1]){
+                    board.addEdge(new CatEdge(v, v + n -1));
+                    hasEdge[v][v+n-1] = true;
+                }
             }
         }
+        //outside vertices
+        for(int i = 0; i < n; i++){
+            board.addEdge(new CatEdge(index(i, 0), FREEDOM));
+            board.addEdge(new CatEdge(index(i, n-1), FREEDOM));
+            board.addEdge(new CatEdge(index(0, i), FREEDOM));
+            board.addEdge(new CatEdge(index(n-1, i), FREEDOM));
+        }
+
+        //random marked tiles at start
         Random rand = new Random();
-        int num = rand.nextInt(n /2);
+        int num = rand.nextInt(n/2);
+        int row;
+        int col;
         while(num > 0){
-            int row = rand.nextInt(n * n);
-            int col = rand.nextInt(n * n);
-            while (marked(row, col)){
-                row = rand.nextInt(n * n);
-                col = rand.nextInt(n * n);
+            row = rand.nextInt(n * n);
+            col = rand.nextInt(n * n);   
+            if(!marked(row, col)){
+                markTile(row, col);
+                num --;
             }
-            markTile(row, col);
-            num --;
         }
     }
     private int index(int row, int col){
